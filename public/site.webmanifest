@@ -1,0 +1,16 @@
+{
+  "name": "weby.Automilly",
+  "short_name": "weby",
+  "description": "Moderní weby na míru pro Vaši firmu",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0D0D12",
+  "theme_color": "#D4AF37",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
