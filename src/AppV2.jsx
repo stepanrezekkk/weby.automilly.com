@@ -403,10 +403,10 @@ const HeroV2 = () => {
                 {/* Headline — V2: slightly larger, tighter leading */}
                 <div className={`mb-5 transition-all duration-700 delay-100 ${loaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
                     <h1 className="font-heading font-extrabold text-5xl md:text-7xl lg:text-[5.5rem] text-background leading-[0.92] tracking-tight">
-                        Moderní web pro Vaši
+                        Moderní web i pro
                     </h1>
                     <div className="font-drama italic text-6xl md:text-8xl lg:text-[7rem] text-accent leading-[0.85] mt-1">
-                        firmu.
+                        Vaši firmu.
                     </div>
                 </div>
 
