@@ -27,7 +27,187 @@ const useReveal = (threshold = 0.15) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // DATA
 // ─────────────────────────────────────────────────────────────────────────────
-const HERO_IMAGE = 'https://images.unsplash.com/photo-1760978631939-32968f2e1813?q=80&w=2670&auto=format&fit=crop'
+// Global mouse position shared between canvas and custom cursor
+const globalMouse = { x: -9999, y: -9999, clientX: -9999, clientY: -9999, visible: false }
+
+// Custom cursor component
+const CustomCursor = () => {
+    const dotRef = useRef(null)
+    const ringRef = useRef(null)
+
+    useEffect(() => {
+        let raf
+        let ringX = -9999, ringY = -9999
+
+        const move = (e) => {
+            globalMouse.clientX = e.clientX
+            globalMouse.clientY = e.clientY
+            globalMouse.visible = true
+            if (dotRef.current) {
+                dotRef.current.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`
+            }
+        }
+        const leave = () => { globalMouse.visible = false }
+        const enter = () => { globalMouse.visible = true }
+
+        const animateRing = () => {
+            ringX += (globalMouse.clientX - ringX) * 0.15
+            ringY += (globalMouse.clientY - ringY) * 0.15
+            if (ringRef.current) {
+                ringRef.current.style.transform = `translate(${ringX}px, ${ringY}px)`
+                ringRef.current.style.opacity = globalMouse.visible ? '1' : '0'
+            }
+            if (dotRef.current) {
+                dotRef.current.style.opacity = globalMouse.visible ? '1' : '0'
+            }
+            raf = requestAnimationFrame(animateRing)
+        }
+
+        document.addEventListener('mousemove', move)
+        document.addEventListener('mouseleave', leave)
+        document.addEventListener('mouseenter', enter)
+        raf = requestAnimationFrame(animateRing)
+
+        return () => {
+            document.removeEventListener('mousemove', move)
+            document.removeEventListener('mouseleave', leave)
+            document.removeEventListener('mouseenter', enter)
+            cancelAnimationFrame(raf)
+        }
+    }, [])
+
+    return (
+        <>
+            <div ref={dotRef} className="pointer-events-none fixed top-0 left-0 z-[9999] opacity-0" style={{ marginLeft: -4, marginTop: -4 }}>
+                <div className="w-2 h-2 rounded-full bg-accent" />
+            </div>
+            <div ref={ringRef} className="pointer-events-none fixed top-0 left-0 z-[9999] opacity-0 transition-[width,height] duration-200" style={{ marginLeft: -20, marginTop: -20 }}>
+                <div className="w-10 h-10 rounded-full border border-accent/50" />
+            </div>
+        </>
+    )
+}
+
+// Animated gold particle wave canvas with mouse interaction
+const HeroCanvas = () => {
+    const canvasRef = useRef(null)
+    const mouse = useRef({ x: -9999, y: -9999 })
+
+    useEffect(() => {
+        const canvas = canvasRef.current
+        if (!canvas) return
+        const ctx = canvas.getContext('2d')
+        let animId
+        let cols, rows, dots
+        const MOUSE_RADIUS = 150
+        const MOUSE_PUSH = 40
+
+        const resize = () => {
+            const dpr = Math.min(window.devicePixelRatio || 1, 2)
+            canvas.width = canvas.offsetWidth * dpr
+            canvas.height = canvas.offsetHeight * dpr
+            ctx.scale(dpr, dpr)
+            const spacing = 28
+            cols = Math.ceil(canvas.offsetWidth / spacing) + 1
+            rows = Math.ceil(canvas.offsetHeight / spacing) + 1
+            dots = []
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    dots.push({ x: c * spacing, y: r * spacing, baseX: c * spacing, baseY: r * spacing })
+                }
+            }
+        }
+
+        resize()
+        window.addEventListener('resize', resize)
+
+        const draw = (t) => {
+            const w = canvas.offsetWidth
+            const h = canvas.offsetHeight
+            ctx.clearRect(0, 0, w, h)
+
+            // Read mouse from global (works through overlapping content)
+            const rect = canvas.getBoundingClientRect()
+            const mx = globalMouse.clientX - rect.left
+            const my = globalMouse.clientY - rect.top
+
+            for (let i = 0; i < dots.length; i++) {
+                const d = dots[i]
+                // Wave displacement
+                const wave1 = Math.sin(d.baseX * 0.008 + t * 0.0006) * 12
+                const wave2 = Math.cos(d.baseY * 0.006 + t * 0.0004) * 8
+                const wave3 = Math.sin((d.baseX + d.baseY) * 0.005 + t * 0.0005) * 6
+                let dy = d.baseY + wave1 + wave2 + wave3
+                let dx = d.baseX
+
+                // Mouse repulsion
+                const ddx = dx - mx
+                const ddy = dy - my
+                const dist = Math.sqrt(ddx * ddx + ddy * ddy)
+                let mouseBoost = 0
+                if (dist < MOUSE_RADIUS && dist > 0) {
+                    const force = (1 - dist / MOUSE_RADIUS) * MOUSE_PUSH
+                    dx += (ddx / dist) * force
+                    dy += (ddy / dist) * force
+                    mouseBoost = (1 - dist / MOUSE_RADIUS)
+                }
+
+                d.x = dx
+                d.y = dy
+
+                // Distance-based intensity (brighter toward top-right)
+                const nx = d.baseX / w
+                const ny = d.baseY / h
+                const intensity = Math.max(0, nx * 0.7 + (1 - ny) * 0.3)
+
+                // Gold color — mouse proximity makes particles glow brighter
+                const alpha = 0.08 + intensity * 0.45 + mouseBoost * 0.4
+                const size = 1 + intensity * 1.8 + mouseBoost * 2
+
+                ctx.beginPath()
+                ctx.arc(dx, dy, size, 0, Math.PI * 2)
+                ctx.fillStyle = `rgba(212, 175, 55, ${Math.min(alpha, 1)})`
+                ctx.fill()
+
+                // Draw faint connection lines near mouse
+                if (mouseBoost > 0.3) {
+                    ctx.strokeStyle = `rgba(212, 175, 55, ${mouseBoost * 0.15})`
+                    ctx.lineWidth = 0.5
+                    // Connect to nearby dots
+                    for (let j = i + 1; j < Math.min(i + cols + 2, dots.length); j++) {
+                        const other = dots[j]
+                        const ox = other.x || other.baseX
+                        const oy = other.y || other.baseY
+                        const odx = ox - mx
+                        const ody = oy - my
+                        const odist = Math.sqrt(odx * odx + ody * ody)
+                        if (odist < MOUSE_RADIUS) {
+                            const ldx = dx - ox
+                            const ldy = dy - oy
+                            const ldist = Math.sqrt(ldx * ldx + ldy * ldy)
+                            if (ldist < 50) {
+                                ctx.beginPath()
+                                ctx.moveTo(dx, dy)
+                                ctx.lineTo(ox, oy)
+                                ctx.stroke()
+                            }
+                        }
+                    }
+                }
+            }
+
+            animId = requestAnimationFrame(draw)
+        }
+
+        animId = requestAnimationFrame(draw)
+        return () => {
+            cancelAnimationFrame(animId)
+            window.removeEventListener('resize', resize)
+        }
+    }, [])
+
+    return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" style={{ opacity: 0.85 }} />
+}
 
 
 const pricingTiers = [
@@ -201,12 +381,12 @@ const HeroV2 = () => {
 
     return (
         <section id="hero" className="relative w-full min-h-[100dvh] flex items-end overflow-hidden">
-            {/* Background */}
-            <div className="absolute inset-0 z-0">
-                <img src={HERO_IMAGE} alt="" className="w-full h-full object-cover object-center" loading="eager" />
-                {/* V2: Much heavier gradient — bottom 60% is nearly opaque */}
-                <div className="absolute inset-0" style={{
-                    background: 'linear-gradient(to top, #0D0D12 0%, rgba(13,13,18,0.95) 30%, rgba(13,13,18,0.6) 60%, rgba(13,13,18,0.15) 100%)'
+            {/* Background — animated particle wave */}
+            <div className="absolute inset-0 z-0 bg-primary">
+                <HeroCanvas />
+                {/* Bottom fade to blend into next section */}
+                <div className="absolute inset-x-0 bottom-0 h-40" style={{
+                    background: 'linear-gradient(to top, #0D0D12 0%, transparent 100%)'
                 }} />
             </div>
 
@@ -1297,7 +1477,8 @@ const FooterV2 = () => (
 // ─────────────────────────────────────────────────────────────────────────────
 function AppV2() {
     return (
-        <div className="bg-primary min-h-screen">
+        <div className="bg-primary min-h-screen cursor-none">
+            <CustomCursor />
             <NavbarV2 />
             <HeroV2 />
             <FeaturesV2 />
