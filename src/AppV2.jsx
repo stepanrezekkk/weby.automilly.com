@@ -27,7 +27,7 @@ const useReveal = (threshold = 0.15) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // DATA
 // ─────────────────────────────────────────────────────────────────────────────
-const HERO_IMAGE = 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2670&auto=format&fit=crop'
+const HERO_IMAGE = 'https://images.unsplash.com/photo-1760978631939-32968f2e1813?q=80&w=2670&auto=format&fit=crop'
 
 
 const pricingTiers = [
