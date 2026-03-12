@@ -261,10 +261,10 @@ const processSteps = [
 
 const portfolioProjects = [
     {
-        title: 'RBPlace',
+        title: 'RB Place',
         desc: 'Realitní platforma pro prodej nemovitostí v Costa Blanca a Costa Cálida ve Španělsku.',
         image: '/portfolio-rbplace.png',
-        tags: ['Reality', 'Vyhledávání', 'SEO'],
+        tags: ['Reality', 'Vyhledávání', 'SEO', 'CMS'],
         color: 'from-blue-500/20 to-accent/10',
         url: 'https://rbplace.com',
     },
@@ -272,8 +272,8 @@ const portfolioProjects = [
         title: 'R+ Capital',
         desc: 'Investiční fond zaměřený na autonomii, dual-use technologie a pokročilou výrobu v regionu CEE.',
         image: '/portfolio-rplus.png',
-        imagePosition: 'center 20%',
-        tags: ['Investice', 'Web na míru', 'Portfolio'],
+        imagePosition: '35% 20%',
+        tags: ['Investice', 'Web na míru', 'CMS'],
         color: 'from-emerald-500/20 to-accent/10',
         url: 'https://rplus.capital',
     },
