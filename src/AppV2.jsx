@@ -269,6 +269,14 @@ const portfolioProjects = [
         url: 'https://rbplace.com',
     },
     {
+        title: 'Casa Di Marmo',
+        desc: 'E-shop s luxusním architektonickým kováním z přírodního kamene, mramoru a travertinu.',
+        image: '/portfolio-casadimarmo.png',
+        tags: ['E-commerce', 'Design', 'Luxus', 'SEO'],
+        color: 'from-pink-500/20 to-accent/10',
+        url: 'https://www.casadimarmo.pl',
+    },
+    {
         title: 'R+ Capital',
         desc: 'Investiční fond zaměřený na autonomii, dual-use technologie a pokročilou výrobu v regionu CEE.',
         image: '/portfolio-rplus.png',
@@ -276,14 +284,6 @@ const portfolioProjects = [
         tags: ['Investice', 'Web na míru', 'CMS', 'SEO'],
         color: 'from-emerald-500/20 to-accent/10',
         url: 'https://rplus.capital',
-    },
-    {
-        title: 'Casa Di Marmo',
-        desc: 'E-shop s luxusním architektonickým kováním z přírodního kamene, mramoru a travertinu.',
-        image: '/portfolio-casadimarmo.png',
-        tags: ['E-commerce', 'Design', 'Luxus', 'SEO'],
-        color: 'from-pink-500/20 to-accent/10',
-        url: 'https://www.casadimarmo.pl',
     },
 ]
 
